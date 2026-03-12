@@ -1,10 +1,4 @@
-import { Orbitron_600SemiBold, useFonts as useOrbitron } from "@expo-google-fonts/orbitron";
-import {
-  SpaceGrotesk_400Regular,
-  SpaceGrotesk_500Medium,
-  SpaceGrotesk_700Bold,
-  useFonts as useSpaceGrotesk,
-} from "@expo-google-fonts/space-grotesk";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
@@ -19,13 +13,11 @@ import "../src/services/tracking";
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 export default function RootLayout() {
-  const [orbitronLoaded] = useOrbitron({
-    Orbitron_600SemiBold,
-  });
-  const [spaceGroteskLoaded] = useSpaceGrotesk({
-    SpaceGrotesk_400Regular,
-    SpaceGrotesk_500Medium,
-    SpaceGrotesk_700Bold,
+  const [fontsLoaded] = useFonts({
+    Orbitron_600SemiBold: require("../assets/fonts/Orbitron_600SemiBold.ttf"),
+    SpaceGrotesk_400Regular: require("../assets/fonts/SpaceGrotesk_400Regular.ttf"),
+    SpaceGrotesk_500Medium: require("../assets/fonts/SpaceGrotesk_500Medium.ttf"),
+    SpaceGrotesk_700Bold: require("../assets/fonts/SpaceGrotesk_700Bold.ttf"),
   });
 
   useEffect(() => {
@@ -35,12 +27,12 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (orbitronLoaded && spaceGroteskLoaded) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync().catch(() => undefined);
     }
-  }, [orbitronLoaded, spaceGroteskLoaded]);
+  }, [fontsLoaded]);
 
-  if (!orbitronLoaded || !spaceGroteskLoaded) {
+  if (!fontsLoaded) {
     return null;
   }
 

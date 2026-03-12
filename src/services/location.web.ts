@@ -4,6 +4,10 @@ interface BrowserLocationSubscription {
   remove: () => void;
 }
 
+export function supportsBackgroundTracking() {
+  return false;
+}
+
 function assertGeolocationAvailable() {
   if (!("geolocation" in navigator)) {
     throw new Error("This browser does not support location access");

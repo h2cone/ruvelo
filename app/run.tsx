@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StatBadge } from "../src/components/StatBadge";
 import { useRun } from "../src/hooks/useRun";
+import { supportsBackgroundTracking } from "../src/services/location";
 import { palette, radius, spacing } from "../src/utils/constants";
 import { formatDistance, formatDuration, formatPace } from "../src/utils/format";
 
@@ -30,6 +31,7 @@ export default function RunScreen() {
 
   const isRunning = phase === "running";
   const isPaused = phase === "paused";
+  const backgroundTrackingEnabled = supportsBackgroundTracking();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -69,7 +71,9 @@ export default function RunScreen() {
           <Text style={styles.statusText}>
             {isPaused
               ? "The timer is paused and route tracking has stopped. Resume to continue this run."
-              : "Tracking will continue through background location when the screen is off. Long-press finish to avoid accidental taps."}
+              : backgroundTrackingEnabled
+                ? "Tracking will continue through background location when the screen is off. Long-press finish to avoid accidental taps."
+                : "Expo Go can only track while this screen stays active. Use an iOS development build to keep recording with the screen off."}
           </Text>
         )}
         {error ? (

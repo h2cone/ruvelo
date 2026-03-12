@@ -31,6 +31,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.ruvelo.app",
       "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Ruvelo needs location access to start tracking your run.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Ruvelo needs continuous location access during a run to record your route and pace.",
         "UIBackgroundModes": [
           "location"
         ]

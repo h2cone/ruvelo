@@ -1,3 +1,4 @@
+import { isRunningInExpoGo } from "expo";
 import * as Location from "expo-location";
 
 import { appendLocationObjects, TRACKING_TASK_NAME } from "./tracking";
@@ -19,10 +20,18 @@ const foregroundOptions: Location.LocationOptions = {
   distanceInterval: 10,
 };
 
+export function supportsBackgroundTracking() {
+  return !isRunningInExpoGo();
+}
+
 export async function ensureLocationPermissions() {
   const foreground = await Location.requestForegroundPermissionsAsync();
   if (foreground.status !== Location.PermissionStatus.GRANTED) {
     throw new Error("Foreground location permission is required to start a run");
+  }
+
+  if (!supportsBackgroundTracking()) {
+    return;
   }
 
   const background = await Location.requestBackgroundPermissionsAsync();
@@ -32,6 +41,10 @@ export async function ensureLocationPermissions() {
 }
 
 export async function beginBackgroundTracking() {
+  if (!supportsBackgroundTracking()) {
+    return;
+  }
+
   const started = await Location.hasStartedLocationUpdatesAsync(TRACKING_TASK_NAME);
   if (!started) {
     await Location.startLocationUpdatesAsync(TRACKING_TASK_NAME, backgroundOptions);
@@ -39,6 +52,10 @@ export async function beginBackgroundTracking() {
 }
 
 export async function endBackgroundTracking() {
+  if (!supportsBackgroundTracking()) {
+    return;
+  }
+
   const started = await Location.hasStartedLocationUpdatesAsync(TRACKING_TASK_NAME);
   if (started) {
     await Location.stopLocationUpdatesAsync(TRACKING_TASK_NAME);
