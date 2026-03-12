@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Ruvelo",
+    "slug": "ruvelo",
+    "scheme": "ruvelo",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Ruvelo needs continuous location access during a run to record your route and pace.",
+          "locationWhenInUsePermission": "Ruvelo needs location access to start tracking your run.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isIosBackgroundLocationEnabled": true
+        }
+      ]
+    ],
+    "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ],
+      "package": "com.ruvelo.app"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ruvelo.app",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location"
+        ]
+      }
+    },
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

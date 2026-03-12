@@ -1,0 +1,10 @@
+docs/req.md
+docs/plan.md
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+*.tsbuildinfo
+npm-debug.*
+.tmp-ruvelo/
