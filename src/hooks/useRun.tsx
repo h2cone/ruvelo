@@ -5,20 +5,24 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import type { LocationSubscription } from "expo-location";
 
+import {
+  createRunRecord,
+  createRunSessionState,
+  getElapsedSeconds,
+  reduceRunSession,
+  RunPhase,
+  RunSessionAction,
+} from "../core/runSession";
 import { createRun } from "../db/runs";
 import { getErrorTranslationKey } from "../i18n/config";
 import { beginBackgroundTracking, beginForegroundTracking, endBackgroundTracking, ensureLocationPermissions } from "../services/location";
 import { getRouteBuffer, resetRouteBuffer, subscribeToRouteBuffer } from "../services/tracking";
-import { Coordinate, Run } from "../types/run";
-import { totalDistance } from "../utils/geo";
-
-type RunPhase = "idle" | "requesting" | "running" | "paused" | "saving";
+import { Coordinate } from "../types/run";
 
 interface RunContextValue {
   phase: RunPhase;
@@ -46,17 +50,19 @@ function createRunId() {
 }
 
 export function RunProvider({ children }: PropsWithChildren) {
-  const [phase, setPhase] = useState<RunPhase>("idle");
-  const [route, setRoute] = useState<Coordinate[]>([]);
-  const [distance, setDistance] = useState(0);
-  const [currentPace, setCurrentPace] = useState<number | null>(null);
+  const [session, setSession] = useState(createRunSessionState);
   const [clock, setClock] = useState(Date.now());
-  const [error, setError] = useState<string | null>(null);
+  const sessionRef = useRef(session);
 
-  const startedAtRef = useRef<number | null>(null);
-  const segmentStartedAtRef = useRef<number | null>(null);
-  const accumulatedMsRef = useRef(0);
   const watcherRef = useRef<LocationSubscription | null>(null);
+
+  const applySessionAction = useCallback((action: RunSessionAction) => {
+    const nextSession = reduceRunSession(sessionRef.current, action);
+    sessionRef.current = nextSession;
+    setSession(nextSession);
+
+    return nextSession;
+  }, []);
 
   const teardownForegroundTracking = useCallback(async () => {
     await watcherRef.current?.remove();
@@ -75,25 +81,15 @@ export function RunProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     return subscribeToRouteBuffer((nextRoute) => {
-      setRoute(nextRoute);
-      const nextDistance = totalDistance(nextRoute);
-      setDistance(nextDistance);
-
-      if (nextRoute.length >= 2) {
-        const last = nextRoute[nextRoute.length - 1];
-        const previous = nextRoute[nextRoute.length - 2];
-        const deltaSeconds = Math.max((last.timestamp - previous.timestamp) / 1000, 1);
-        const deltaDistance = totalDistance([previous, last]);
-        const pace = deltaDistance > 0 ? (deltaSeconds / deltaDistance) * 1000 : null;
-        setCurrentPace(pace);
-      } else {
-        setCurrentPace(null);
-      }
+      applySessionAction({
+        type: "routeUpdated",
+        route: nextRoute,
+      });
     });
-  }, []);
+  }, [applySessionAction]);
 
   useEffect(() => {
-    if (phase !== "running") {
+    if (session.phase !== "running") {
       return;
     }
 
@@ -102,7 +98,7 @@ export function RunProvider({ children }: PropsWithChildren) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [phase]);
+  }, [session.phase]);
 
   useEffect(() => {
     return () => {
@@ -111,152 +107,130 @@ export function RunProvider({ children }: PropsWithChildren) {
     };
   }, [teardownForegroundTracking]);
 
-  const elapsedSeconds = useMemo(() => {
-    const segmentMs =
-      phase === "running" && segmentStartedAtRef.current
-        ? clock - segmentStartedAtRef.current
-        : 0;
-
-    return Math.max(0, Math.floor((accumulatedMsRef.current + segmentMs) / 1000));
-  }, [clock, phase]);
+  const elapsedSeconds = getElapsedSeconds(session, clock);
 
   const startRun = useCallback(async () => {
-    if (phase !== "idle") {
+    if (sessionRef.current.phase !== "idle") {
       return;
     }
 
     try {
-      setError(null);
-      setPhase("requesting");
+      const now = Date.now();
+      applySessionAction({
+        type: "startRequested",
+        now,
+      });
       resetRouteBuffer();
-      setRoute([]);
-      setDistance(0);
-      setCurrentPace(null);
-      accumulatedMsRef.current = 0;
-      startedAtRef.current = Date.now();
-      segmentStartedAtRef.current = Date.now();
-
       await ensureLocationPermissions();
       await beginCapture();
 
       setClock(Date.now());
-      setPhase("running");
+      applySessionAction({
+        type: "startSucceeded",
+      });
     } catch (startError) {
       console.error(startError);
       await stopCapture().catch(() => undefined);
-      setPhase("idle");
-      setError(getErrorTranslationKey(startError, "errors.failedToStartRun"));
+      applySessionAction({
+        type: "startFailed",
+        error: getErrorTranslationKey(startError, "errors.failedToStartRun"),
+      });
     }
-  }, [beginCapture, phase, stopCapture]);
+  }, [applySessionAction, beginCapture, stopCapture]);
 
   const pauseRun = useCallback(async () => {
-    if (phase !== "running") {
+    if (sessionRef.current.phase !== "running") {
       return;
     }
 
-    const segmentStartedAt = segmentStartedAtRef.current;
-    if (segmentStartedAt) {
-      accumulatedMsRef.current += Date.now() - segmentStartedAt;
-    }
-    segmentStartedAtRef.current = null;
-
+    const now = Date.now();
+    applySessionAction({
+      type: "paused",
+      now,
+    });
     await stopCapture();
-    setClock(Date.now());
-    setPhase("paused");
-  }, [phase, stopCapture]);
+    setClock(now);
+  }, [applySessionAction, stopCapture]);
 
   const resumeRun = useCallback(async () => {
-    if (phase !== "paused") {
+    if (sessionRef.current.phase !== "paused") {
       return;
     }
 
     try {
-      setError(null);
-      setPhase("requesting");
-      segmentStartedAtRef.current = Date.now();
+      applySessionAction({
+        type: "resumeRequested",
+        now: Date.now(),
+      });
       await beginCapture();
       setClock(Date.now());
-      setPhase("running");
+      applySessionAction({
+        type: "resumeSucceeded",
+      });
     } catch (resumeError) {
       console.error(resumeError);
-      setPhase("paused");
-      setError(getErrorTranslationKey(resumeError, "errors.failedToResumeRun"));
+      applySessionAction({
+        type: "resumeFailed",
+        error: getErrorTranslationKey(resumeError, "errors.failedToResumeRun"),
+      });
     }
-  }, [beginCapture, phase]);
+  }, [applySessionAction, beginCapture]);
 
   const finishRun = useCallback(async () => {
-    if (phase !== "running" && phase !== "paused") {
+    const currentSession = sessionRef.current;
+    if (currentSession.phase !== "running" && currentSession.phase !== "paused") {
       return null;
     }
 
-    setPhase("saving");
-
     try {
-      const segmentStartedAt = segmentStartedAtRef.current;
-      if (phase === "running" && segmentStartedAt) {
-        accumulatedMsRef.current += Date.now() - segmentStartedAt;
-      }
-      segmentStartedAtRef.current = null;
+      const endedAt = Date.now();
+      const savingSession = applySessionAction({
+        type: "saveRequested",
+        now: endedAt,
+      });
 
       await stopCapture();
 
-      const startedAt = startedAtRef.current;
-      const endedAt = Date.now();
       const routeSnapshot = getRouteBuffer();
-      const duration = Math.max(1, Math.floor(accumulatedMsRef.current / 1000));
-      const routeDistance = totalDistance(routeSnapshot);
-
-      if (!startedAt) {
-        throw new Error("errors.runStartTimeMissing");
-      }
-
-      const run: Run = {
-        id: createRunId(),
-        startedAt,
-        endedAt,
-        duration,
-        distance: routeDistance,
-        avgPace: routeDistance > 0 ? (duration / routeDistance) * 1000 : 0,
-        route: routeSnapshot,
-      };
-
+      const run = createRunRecord(savingSession, createRunId(), endedAt, routeSnapshot);
       await createRun(run);
 
-      startedAtRef.current = null;
-      accumulatedMsRef.current = 0;
-      setPhase("idle");
+      applySessionAction({
+        type: "reset",
+      });
       setClock(Date.now());
-      setDistance(0);
-      setCurrentPace(null);
       resetRouteBuffer();
       router.replace(`/summary/${run.id}`);
 
       return run.id;
     } catch (finishError) {
       console.error(finishError);
-      setPhase("idle");
-      setError(getErrorTranslationKey(finishError, "errors.failedToSaveRun"));
+      applySessionAction({
+        type: "saveFailed",
+        error: getErrorTranslationKey(finishError, "errors.failedToSaveRun"),
+      });
       return null;
     }
-  }, [phase, stopCapture]);
+  }, [applySessionAction, stopCapture]);
 
-  const value = useMemo<RunContextValue>(
-    () => ({
-      phase,
-      elapsedSeconds,
-      distance,
-      currentPace,
-      route,
-      error,
-      isBusy: phase === "requesting" || phase === "saving",
-      startRun,
-      pauseRun,
-      resumeRun,
-      finishRun,
-      clearError: () => setError(null),
-    }),
-    [currentPace, distance, elapsedSeconds, error, finishRun, pauseRun, phase, resumeRun, route, startRun]
-  );
+  const value: RunContextValue = {
+    phase: session.phase,
+    elapsedSeconds,
+    distance: session.distance,
+    currentPace: session.currentPace,
+    route: session.route,
+    error: session.error,
+    isBusy: session.phase === "requesting" || session.phase === "saving",
+    startRun,
+    pauseRun,
+    resumeRun,
+    finishRun,
+    clearError: () => {
+      applySessionAction({
+        type: "errorCleared",
+      });
+    },
+  };
 
   return <RunContext.Provider value={value}>{children}</RunContext.Provider>;
 }
