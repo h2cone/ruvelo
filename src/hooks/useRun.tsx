@@ -12,6 +12,7 @@ import {
 import type { LocationSubscription } from "expo-location";
 
 import { createRun } from "../db/runs";
+import { getErrorTranslationKey } from "../i18n/config";
 import { beginBackgroundTracking, beginForegroundTracking, endBackgroundTracking, ensureLocationPermissions } from "../services/location";
 import { getRouteBuffer, resetRouteBuffer, subscribeToRouteBuffer } from "../services/tracking";
 import { Coordinate, Run } from "../types/run";
@@ -144,7 +145,7 @@ export function RunProvider({ children }: PropsWithChildren) {
       console.error(startError);
       await stopCapture().catch(() => undefined);
       setPhase("idle");
-      setError(startError instanceof Error ? startError.message : "Failed to start the run");
+      setError(getErrorTranslationKey(startError, "errors.failedToStartRun"));
     }
   }, [beginCapture, phase, stopCapture]);
 
@@ -179,7 +180,7 @@ export function RunProvider({ children }: PropsWithChildren) {
     } catch (resumeError) {
       console.error(resumeError);
       setPhase("paused");
-      setError(resumeError instanceof Error ? resumeError.message : "Failed to resume the run");
+      setError(getErrorTranslationKey(resumeError, "errors.failedToResumeRun"));
     }
   }, [beginCapture, phase]);
 
@@ -206,7 +207,7 @@ export function RunProvider({ children }: PropsWithChildren) {
       const routeDistance = totalDistance(routeSnapshot);
 
       if (!startedAt) {
-        throw new Error("Run start time is missing");
+        throw new Error("errors.runStartTimeMissing");
       }
 
       const run: Run = {
@@ -234,7 +235,7 @@ export function RunProvider({ children }: PropsWithChildren) {
     } catch (finishError) {
       console.error(finishError);
       setPhase("idle");
-      setError(finishError instanceof Error ? finishError.message : "Failed to save the run");
+      setError(getErrorTranslationKey(finishError, "errors.failedToSaveRun"));
       return null;
     }
   }, [phase, stopCapture]);

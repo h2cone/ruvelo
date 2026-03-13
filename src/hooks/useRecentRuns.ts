@@ -17,7 +17,7 @@ export function useRecentRuns(limit = 12) {
       setRuns(result);
     } catch (loadError) {
       console.error(loadError);
-      setError("Failed to load runs");
+      setError("errors.failedToLoadRuns");
     } finally {
       setLoading(false);
     }

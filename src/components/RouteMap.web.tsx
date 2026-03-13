@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { useI18n } from "../i18n";
 import { Coordinate } from "../types/run";
 import { palette, radius, spacing } from "../utils/constants";
 
@@ -8,20 +9,22 @@ interface RouteMapProps {
 }
 
 export function RouteMap({ route }: RouteMapProps) {
+  const { t } = useI18n();
+
   if (route.length === 0) {
     return (
       <View style={[styles.placeholder, styles.shell]}>
-        <Text style={styles.placeholderTitle}>No route yet</Text>
-        <Text style={styles.placeholderBody}>Complete a run first to view the route replay.</Text>
+        <Text style={styles.placeholderTitle}>{t("map.noRoute")}</Text>
+        <Text style={styles.placeholderBody}>{t("map.completeRunFirst")}</Text>
       </View>
     );
   }
 
   return (
     <View style={[styles.placeholder, styles.shell]}>
-      <Text style={styles.placeholderTitle}>Map preview is disabled on web</Text>
+      <Text style={styles.placeholderTitle}>{t("map.webDisabled")}</Text>
       <Text style={styles.placeholderBody}>
-        This run contains {route.length} route points. Open it on Android or iOS to see the full map.
+        {t("map.webBody", { count: route.length })}
       </Text>
     </View>
   );

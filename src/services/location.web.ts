@@ -10,7 +10,7 @@ export function supportsBackgroundTracking() {
 
 function assertGeolocationAvailable() {
   if (!("geolocation" in navigator)) {
-    throw new Error("This browser does not support location access");
+    throw new Error("errors.browserLocationUnsupported");
   }
 }
 

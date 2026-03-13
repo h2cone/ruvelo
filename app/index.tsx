@@ -4,14 +4,17 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AnimatedCounter } from "../src/components/AnimatedCounter";
+import { LanguageToggle } from "../src/components/LanguageToggle";
 import { RunCard } from "../src/components/RunCard";
 import { StartButton } from "../src/components/StartButton";
 import { useRecentRuns } from "../src/hooks/useRecentRuns";
+import { useI18n } from "../src/i18n";
 import { palette, radius, spacing } from "../src/utils/constants";
 import { formatDistance, formatDistanceCompact } from "../src/utils/format";
 
 export default function HomeScreen() {
   const { runs, loading, error } = useRecentRuns();
+  const { language, t, translateText } = useI18n();
 
   const weeklySummary = useMemo(() => {
     const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -27,46 +30,46 @@ export default function HomeScreen() {
       <View style={styles.backgroundOrbA} />
       <View style={styles.backgroundOrbB} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <LanguageToggle />
+        </View>
+
         <View style={styles.hero}>
-          <Text style={styles.eyebrow}>RUVELO / WEEK LOOP</Text>
-          <Text style={styles.title}>Turn every morning run into a level worth replaying.</Text>
-          <Text style={styles.body}>
-            Check your recent mileage, start instantly, and finish with a route recap that feels like a game results screen.
-          </Text>
+          <Text style={styles.eyebrow}>{t("home.eyebrow")}</Text>
+          <Text style={styles.title}>{t("home.title")}</Text>
+          <Text style={styles.body}>{t("home.body")}</Text>
         </View>
 
         <View style={styles.summaryCard}>
           <View style={styles.summaryBlock}>
-            <Text style={styles.summaryLabel}>7-Day Distance</Text>
+            <Text style={styles.summaryLabel}>{t("home.weekDistance")}</Text>
             <AnimatedCounter
               value={weeklySummary.distance / 1000}
-              formatter={(value) => `${value.toFixed(1)} km`}
+              formatter={(value) => formatDistance(value * 1000, 1, language)}
               style={styles.summaryValue}
             />
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryBlock}>
-            <Text style={styles.summaryLabel}>Runs Completed</Text>
+            <Text style={styles.summaryLabel}>{t("home.runsCompleted")}</Text>
             <AnimatedCounter value={weeklySummary.count} style={styles.summaryValue} />
           </View>
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Runs</Text>
-          {runs.length > 0 ? <Text style={styles.sectionHint}>Open a run to replay the summary</Text> : null}
+          <Text style={styles.sectionTitle}>{t("home.recentRuns")}</Text>
+          {runs.length > 0 ? <Text style={styles.sectionHint}>{t("home.recentRunsHint")}</Text> : null}
         </View>
 
         {loading ? (
           <View style={styles.loadingShell}>
             <ActivityIndicator color={palette.accent} />
-            <Text style={styles.loadingText}>Loading runs...</Text>
+            <Text style={styles.loadingText}>{t("home.loadingRuns")}</Text>
           </View>
         ) : runs.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>Your first run has not started yet</Text>
-            <Text style={styles.emptyBody}>
-              Tap the start button below. Ruvelo will record the route, time, and distance, then build a post-run summary screen.
-            </Text>
+            <Text style={styles.emptyTitle}>{t("home.emptyTitle")}</Text>
+            <Text style={styles.emptyBody}>{t("home.emptyBody")}</Text>
           </View>
         ) : (
           <View style={styles.runList}>
@@ -76,13 +79,17 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{translateText(error)}</Text> : null}
 
         <View style={styles.ctaSection}>
           <StartButton onPress={() => router.push("/run")} />
           <Pressable style={styles.secondaryCta} onPress={() => router.push("/run")}>
             <Text style={styles.secondaryCtaLabel}>
-              Start now {runs[0] ? `· last run ${formatDistanceCompact(runs[0].distance)}` : ""}
+              {runs[0]
+                ? t("home.startNowWithLastRun", {
+                    distance: formatDistanceCompact(runs[0].distance, language),
+                  })
+                : t("home.startNow")}
             </Text>
           </Pressable>
         </View>
@@ -101,6 +108,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: 56,
     gap: spacing.xl,
+  },
+  topBar: {
+    alignItems: "flex-end",
   },
   backgroundOrbA: {
     position: "absolute",

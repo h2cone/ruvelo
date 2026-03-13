@@ -2,6 +2,7 @@ import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, Text } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
+import { useI18n } from "../i18n";
 import { palette, radius, shadows, spacing } from "../utils/constants";
 
 interface StartButtonProps {
@@ -12,6 +13,7 @@ interface StartButtonProps {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function StartButton({ onPress, disabled }: StartButtonProps) {
+  const { t } = useI18n();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -34,7 +36,7 @@ export function StartButton({ onPress, disabled }: StartButtonProps) {
       }}
     >
       <Text style={styles.kicker}>RUVELO</Text>
-      <Text style={styles.label}>Start Run</Text>
+      <Text style={styles.label}>{t("startButton.label")}</Text>
     </AnimatedPressable>
   );
 }

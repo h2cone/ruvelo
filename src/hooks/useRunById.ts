@@ -29,7 +29,7 @@ export function useRunById(id?: string | string[]) {
       } catch (loadError) {
         console.error(loadError);
         if (active) {
-          setError("Failed to load run details");
+          setError("errors.failedToLoadRunDetails");
         }
       } finally {
         if (active) {

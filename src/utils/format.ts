@@ -1,13 +1,22 @@
-export function formatDistance(meters: number, digits = 2) {
-  return `${(meters / 1000).toFixed(digits)} km`;
+import { getCurrentLanguage, getDistanceUnit, getLocale, getPaceUnit, Language } from "../i18n/config";
+
+export function formatDistance(
+  meters: number,
+  digits = 2,
+  language: Language = getCurrentLanguage()
+) {
+  return `${(meters / 1000).toFixed(digits)} ${getDistanceUnit(language, "km")}`;
 }
 
-export function formatDistanceCompact(meters: number) {
+export function formatDistanceCompact(
+  meters: number,
+  language: Language = getCurrentLanguage()
+) {
   if (meters < 1000) {
-    return `${Math.round(meters)} m`;
+    return `${Math.round(meters)} ${getDistanceUnit(language, "m")}`;
   }
 
-  return `${(meters / 1000).toFixed(1)} km`;
+  return `${(meters / 1000).toFixed(1)} ${getDistanceUnit(language, "km")}`;
 }
 
 export function formatDuration(totalSeconds: number) {
@@ -39,16 +48,29 @@ export function formatPace(secondsPerKm: number | null | undefined) {
   return `${minutes}'${seconds}"`;
 }
 
-export function formatWeekday(timestamp: number) {
-  return new Date(timestamp).toLocaleDateString("en-US", {
+export function formatPaceWithUnit(
+  secondsPerKm: number | null | undefined,
+  language: Language = getCurrentLanguage()
+) {
+  return `${formatPace(secondsPerKm)}${getPaceUnit(language)}`;
+}
+
+export function formatWeekday(
+  timestamp: number,
+  language: Language = getCurrentLanguage()
+) {
+  return new Date(timestamp).toLocaleDateString(getLocale(language), {
     month: "short",
     day: "numeric",
     weekday: "short",
   });
 }
 
-export function formatClock(timestamp: number) {
-  return new Date(timestamp).toLocaleTimeString("en-US", {
+export function formatClock(
+  timestamp: number,
+  language: Language = getCurrentLanguage()
+) {
+  return new Date(timestamp).toLocaleTimeString(getLocale(language), {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,

@@ -1,24 +1,29 @@
 import { isRunningInExpoGo } from "expo";
 import * as Location from "expo-location";
 
+import { getCurrentLanguage, translate } from "../i18n/config";
 import { appendLocationObjects, TRACKING_TASK_NAME } from "./tracking";
-
-const backgroundOptions: Location.LocationTaskOptions = {
-  accuracy: Location.Accuracy.High,
-  distanceInterval: 10,
-  deferredUpdatesDistance: 10,
-  pausesUpdatesAutomatically: false,
-  showsBackgroundLocationIndicator: true,
-  foregroundService: {
-    notificationTitle: "Ruvelo is tracking your run",
-    notificationBody: "Finish the run to see the route and summary screen.",
-  },
-};
 
 const foregroundOptions: Location.LocationOptions = {
   accuracy: Location.Accuracy.High,
   distanceInterval: 10,
 };
+
+function createBackgroundOptions(): Location.LocationTaskOptions {
+  const language = getCurrentLanguage();
+
+  return {
+    accuracy: Location.Accuracy.High,
+    distanceInterval: 10,
+    deferredUpdatesDistance: 10,
+    pausesUpdatesAutomatically: false,
+    showsBackgroundLocationIndicator: true,
+    foregroundService: {
+      notificationTitle: translate(language, "tracking.notificationTitle"),
+      notificationBody: translate(language, "tracking.notificationBody"),
+    },
+  };
+}
 
 export function supportsBackgroundTracking() {
   return !isRunningInExpoGo();
@@ -27,7 +32,7 @@ export function supportsBackgroundTracking() {
 export async function ensureLocationPermissions() {
   const foreground = await Location.requestForegroundPermissionsAsync();
   if (foreground.status !== Location.PermissionStatus.GRANTED) {
-    throw new Error("Foreground location permission is required to start a run");
+    throw new Error("errors.foregroundPermissionRequired");
   }
 
   if (!supportsBackgroundTracking()) {
@@ -36,7 +41,7 @@ export async function ensureLocationPermissions() {
 
   const background = await Location.requestBackgroundPermissionsAsync();
   if (background.status !== Location.PermissionStatus.GRANTED) {
-    throw new Error("Background location permission is required to keep tracking with the screen off");
+    throw new Error("errors.backgroundPermissionRequired");
   }
 }
 
@@ -47,7 +52,7 @@ export async function beginBackgroundTracking() {
 
   const started = await Location.hasStartedLocationUpdatesAsync(TRACKING_TASK_NAME);
   if (!started) {
-    await Location.startLocationUpdatesAsync(TRACKING_TASK_NAME, backgroundOptions);
+    await Location.startLocationUpdatesAsync(TRACKING_TASK_NAME, createBackgroundOptions());
   }
 }
 

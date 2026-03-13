@@ -1,14 +1,26 @@
-import { useEffect } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
+import { LanguageToggle } from "../src/components/LanguageToggle";
 import { StatBadge } from "../src/components/StatBadge";
 import { useRun } from "../src/hooks/useRun";
+import { useI18n } from "../src/i18n";
 import { supportsBackgroundTracking } from "../src/services/location";
 import { palette, radius, spacing } from "../src/utils/constants";
-import { formatDistance, formatDuration, formatPace } from "../src/utils/format";
+import { formatDistance, formatDuration, formatPaceWithUnit } from "../src/utils/format";
 
 export default function RunScreen() {
+  const finishHoldTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [finishButtonWidth, setFinishButtonWidth] = useState(0);
+  const finishHoldOverlayTranslateX = useSharedValue(0);
   const {
     phase,
     elapsedSeconds,
@@ -22,6 +34,7 @@ export default function RunScreen() {
     finishRun,
     clearError,
   } = useRun();
+  const { language, t, translateText } = useI18n();
 
   useEffect(() => {
     if (phase === "idle" && !error) {
@@ -33,31 +46,103 @@ export default function RunScreen() {
   const isPaused = phase === "paused";
   const backgroundTrackingEnabled = supportsBackgroundTracking();
 
+  useEffect(() => {
+    if (finishButtonWidth > 0) {
+      finishHoldOverlayTranslateX.value = -finishButtonWidth;
+    }
+  }, [finishButtonWidth, finishHoldOverlayTranslateX]);
+
+  useEffect(() => {
+    return () => {
+      if (finishHoldTimerRef.current) {
+        clearTimeout(finishHoldTimerRef.current);
+      }
+      cancelAnimation(finishHoldOverlayTranslateX);
+    };
+  }, [finishHoldOverlayTranslateX]);
+
+  const finishHoldOverlayStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: finishHoldOverlayTranslateX.value }],
+  }));
+
+  function resetFinishHoldOverlay(duration = 140) {
+    if (finishButtonWidth <= 0) {
+      finishHoldOverlayTranslateX.value = 0;
+      return;
+    }
+
+    cancelAnimation(finishHoldOverlayTranslateX);
+    finishHoldOverlayTranslateX.value = withTiming(-finishButtonWidth, {
+      duration,
+      easing: Easing.out(Easing.quad),
+    });
+  }
+
+  function clearFinishHoldTimer() {
+    if (finishHoldTimerRef.current) {
+      clearTimeout(finishHoldTimerRef.current);
+      finishHoldTimerRef.current = null;
+    }
+
+    resetFinishHoldOverlay();
+  }
+
+  function startFinishHoldTimer() {
+    if (isBusy || phase === "idle" || finishHoldTimerRef.current) {
+      return;
+    }
+
+    if (finishButtonWidth > 0) {
+      cancelAnimation(finishHoldOverlayTranslateX);
+      finishHoldOverlayTranslateX.value = -finishButtonWidth;
+      finishHoldOverlayTranslateX.value = withTiming(0, {
+        duration: 900,
+        easing: Easing.linear,
+      });
+    }
+
+    finishHoldTimerRef.current = setTimeout(() => {
+      finishHoldTimerRef.current = null;
+      finishRun().catch(() => undefined);
+    }, 900);
+  }
+
+  function handleFinishButtonLayout(event: LayoutChangeEvent) {
+    const width = Math.round(event.nativeEvent.layout.width);
+    if (width !== finishButtonWidth) {
+      setFinishButtonWidth(width);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.gridGlow} />
+      <View style={styles.topBar}>
+        <LanguageToggle />
+      </View>
+
       <View style={styles.header}>
-        <Text style={styles.headerKicker}>LIVE RUN</Text>
-        <Text style={styles.headerTitle}>{isPaused ? "Paused" : "Recording"}</Text>
+        <Text style={styles.headerKicker}>{t("run.live")}</Text>
+        <Text style={styles.headerTitle}>{isPaused ? t("run.paused") : t("run.recording")}</Text>
       </View>
 
       <View style={styles.timerShell}>
-        <Text style={styles.timerLabel}>TIME</Text>
+        <Text style={styles.timerLabel}>{t("run.time")}</Text>
         <Text style={styles.timerValue}>{formatDuration(elapsedSeconds)}</Text>
       </View>
 
       <View style={styles.statsRow}>
         <StatBadge
-          label="Distance"
+          label={t("run.distance")}
           value={distance}
           tone="accent"
-          formatter={(value) => formatDistance(value, 2)}
+          formatter={(value) => formatDistance(value, 2, language)}
         />
         <StatBadge
-          label="Current Pace"
+          label={t("run.currentPace")}
           value={currentPace ?? 0}
           tone="cool"
-          formatter={(value) => `${formatPace(value)}/km`}
+          formatter={(value) => formatPaceWithUnit(value, language)}
         />
       </View>
 
@@ -65,15 +150,15 @@ export default function RunScreen() {
         {isBusy ? (
           <View style={styles.loadingRow}>
             <ActivityIndicator color={palette.accent} />
-            <Text style={styles.statusText}>Connecting to location services...</Text>
+            <Text style={styles.statusText}>{t("run.connecting")}</Text>
           </View>
         ) : (
           <Text style={styles.statusText}>
             {isPaused
-              ? "The timer is paused and route tracking has stopped. Resume to continue this run."
+              ? t("run.statusPaused")
               : backgroundTrackingEnabled
-                ? "Tracking will continue through background location when the screen is off. Long-press finish to avoid accidental taps."
-                : "Expo Go can only track while this screen stays active. Use an iOS development build to keep recording with the screen off."}
+                ? t("run.statusBackgroundOn")
+                : t("run.statusBackgroundOff")}
           </Text>
         )}
         {error ? (
@@ -84,9 +169,9 @@ export default function RunScreen() {
               startRun().catch(() => undefined);
             }}
           >
-            <Text style={styles.errorTitle}>Failed to start location tracking</Text>
-            <Text style={styles.errorBody}>{error}</Text>
-            <Text style={styles.errorAction}>Tap to retry</Text>
+            <Text style={styles.errorTitle}>{t("run.failedToStartTracking")}</Text>
+            <Text style={styles.errorBody}>{translateText(error)}</Text>
+            <Text style={styles.errorAction}>{t("run.tapToRetry")}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -103,19 +188,28 @@ export default function RunScreen() {
             }
           }}
         >
-          <Text style={styles.secondaryLabel}>{isPaused ? "Resume" : "Pause"}</Text>
+          <Text style={styles.secondaryLabel}>{isPaused ? t("run.resume") : t("run.pause")}</Text>
         </Pressable>
 
         <Pressable
           disabled={isBusy || phase === "idle"}
-          style={[styles.primaryButton, isBusy ? styles.buttonDisabled : null]}
-          delayLongPress={900}
-          onLongPress={() => {
-            finishRun().catch(() => undefined);
-          }}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            isBusy ? styles.buttonDisabled : null,
+            pressed && !isBusy && phase !== "idle" ? styles.primaryButtonPressed : null,
+          ]}
+          onLayout={handleFinishButtonLayout}
+          onPressIn={startFinishHoldTimer}
+          onPressOut={clearFinishHoldTimer}
         >
-          <Text style={styles.primaryKicker}>Long press to finish</Text>
-          <Text style={styles.primaryLabel}>End this run</Text>
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.primaryButtonProgress, finishHoldOverlayStyle]}
+          />
+          <View style={styles.primaryButtonContent}>
+            <Text style={styles.primaryKicker}>{t("run.longPressToFinish")}</Text>
+            <Text style={styles.primaryLabel}>{t("run.endThisRun")}</Text>
+          </View>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -130,6 +224,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     backgroundColor: palette.bg,
     justifyContent: "space-between",
+  },
+  topBar: {
+    alignItems: "flex-end",
   },
   gridGlow: {
     position: "absolute",
@@ -221,9 +318,20 @@ const styles = StyleSheet.create({
   primaryButton: {
     minHeight: 96,
     borderRadius: radius.lg,
+    overflow: "hidden",
+    backgroundColor: palette.accentWarm,
+  },
+  primaryButtonPressed: {
+    transform: [{ scale: 0.985 }],
+  },
+  primaryButtonProgress: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(6,17,31,0.2)",
+  },
+  primaryButtonContent: {
+    minHeight: 96,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: palette.accentWarm,
     gap: spacing.xs,
   },
   primaryKicker: {

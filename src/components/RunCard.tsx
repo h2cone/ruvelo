@@ -1,7 +1,14 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useI18n } from "../i18n";
 import { Run } from "../types/run";
-import { formatClock, formatDistanceCompact, formatDuration, formatPace, formatWeekday } from "../utils/format";
+import {
+  formatClock,
+  formatDistanceCompact,
+  formatDuration,
+  formatPaceWithUnit,
+  formatWeekday,
+} from "../utils/format";
 import { palette, radius, spacing } from "../utils/constants";
 
 interface RunCardProps {
@@ -10,23 +17,25 @@ interface RunCardProps {
 }
 
 export function RunCard({ run, onPress }: RunCardProps) {
+  const { language, t } = useI18n();
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.date}>{formatWeekday(run.startedAt)}</Text>
-          <Text style={styles.time}>{formatClock(run.startedAt)}</Text>
+          <Text style={styles.date}>{formatWeekday(run.startedAt, language)}</Text>
+          <Text style={styles.time}>{formatClock(run.startedAt, language)}</Text>
         </View>
-        <Text style={styles.distance}>{formatDistanceCompact(run.distance)}</Text>
+        <Text style={styles.distance}>{formatDistanceCompact(run.distance, language)}</Text>
       </View>
       <View style={styles.stats}>
         <View style={styles.stat}>
-          <Text style={styles.label}>Duration</Text>
+          <Text style={styles.label}>{t("runCard.duration")}</Text>
           <Text style={styles.value}>{formatDuration(run.duration)}</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.label}>Avg Pace</Text>
-          <Text style={styles.value}>{formatPace(run.avgPace)}/km</Text>
+          <Text style={styles.label}>{t("runCard.avgPace")}</Text>
+          <Text style={styles.value}>{formatPaceWithUnit(run.avgPace, language)}</Text>
         </View>
       </View>
     </Pressable>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 
+import { useI18n } from "../i18n";
 import { Coordinate } from "../types/run";
 import { palette, radius, spacing } from "../utils/constants";
 import { boundingRegion } from "../utils/geo";
@@ -11,6 +12,7 @@ interface RouteMapProps {
 }
 
 export function RouteMap({ route }: RouteMapProps) {
+  const { t } = useI18n();
   const mapRef = useRef<MapView | null>(null);
 
   useEffect(() => {
@@ -27,8 +29,8 @@ export function RouteMap({ route }: RouteMapProps) {
   if (route.length === 0) {
     return (
       <View style={[styles.placeholder, styles.shell]}>
-        <Text style={styles.placeholderTitle}>No route yet</Text>
-        <Text style={styles.placeholderBody}>Complete a run first to view the route replay.</Text>
+        <Text style={styles.placeholderTitle}>{t("map.noRoute")}</Text>
+        <Text style={styles.placeholderBody}>{t("map.completeRunFirst")}</Text>
       </View>
     );
   }

@@ -3,21 +3,32 @@ import { Share, StyleSheet, Text, Pressable, ScrollView, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
+import { LanguageToggle } from "../../src/components/LanguageToggle";
 import { RouteMap } from "../../src/components/RouteMap";
 import { StatBadge } from "../../src/components/StatBadge";
 import { useRunById } from "../../src/hooks/useRunById";
+import { useI18n } from "../../src/i18n";
 import { palette, radius, spacing } from "../../src/utils/constants";
-import { formatDistance, formatDuration, formatPace, formatWeekday } from "../../src/utils/format";
+import {
+  formatDistance,
+  formatDuration,
+  formatPaceWithUnit,
+  formatWeekday,
+} from "../../src/utils/format";
 
 export default function SummaryScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const { run, loading, error } = useRunById(params.id);
+  const { language, t, translateText } = useI18n();
 
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <LanguageToggle />
+        </View>
         <View style={styles.centerShell}>
-          <Text style={styles.title}>Building your summary...</Text>
+          <Text style={styles.title}>{t("summary.loading")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -26,11 +37,16 @@ export default function SummaryScreen() {
   if (!run || error) {
     return (
       <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <LanguageToggle />
+        </View>
         <View style={styles.centerShell}>
-          <Text style={styles.title}>Run not found</Text>
-          <Text style={styles.subtitle}>{error ?? "Go back home and start a new run."}</Text>
+          <Text style={styles.title}>{t("summary.notFound")}</Text>
+          <Text style={styles.subtitle}>
+            {error ? translateText(error) : t("summary.notFoundBody")}
+          </Text>
           <Pressable style={styles.secondaryButton} onPress={() => router.replace("/")}>
-            <Text style={styles.secondaryLabel}>Back Home</Text>
+            <Text style={styles.secondaryLabel}>{t("summary.backHome")}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -40,10 +56,19 @@ export default function SummaryScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.contentTopBar}>
+          <LanguageToggle />
+        </View>
+
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>RUN COMPLETE</Text>
-          <Text style={styles.title}>This run is complete.</Text>
-          <Text style={styles.subtitle}>{formatWeekday(run.startedAt)} · {run.route.length} route points</Text>
+          <Text style={styles.eyebrow}>{t("summary.eyebrow")}</Text>
+          <Text style={styles.title}>{t("summary.title")}</Text>
+          <Text style={styles.subtitle}>
+            {t("summary.headerMeta", {
+              date: formatWeekday(run.startedAt, language),
+              count: run.route.length,
+            })}
+          </Text>
         </View>
 
         <Animated.View entering={FadeInUp.duration(450)} style={styles.mapBlock}>
@@ -52,26 +77,35 @@ export default function SummaryScreen() {
 
         <View style={styles.badgeRow}>
           <Animated.View entering={FadeInUp.delay(120).duration(420)} style={styles.badgeItem}>
-            <StatBadge label="Distance" value={run.distance} formatter={(value) => formatDistance(value)} />
+            <StatBadge
+              label={t("summary.distance")}
+              value={run.distance}
+              formatter={(value) => formatDistance(value, 2, language)}
+            />
           </Animated.View>
           <Animated.View entering={FadeInUp.delay(220).duration(420)} style={styles.badgeItem}>
-            <StatBadge label="Duration" value={run.duration} tone="warm" formatter={(value) => formatDuration(Math.round(value))} />
+            <StatBadge
+              label={t("summary.duration")}
+              value={run.duration}
+              tone="warm"
+              formatter={(value) => formatDuration(Math.round(value))}
+            />
           </Animated.View>
         </View>
 
         <Animated.View entering={FadeInUp.delay(320).duration(420)} style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Summary</Text>
+          <Text style={styles.summaryTitle}>{t("summary.titleCard")}</Text>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Average Pace</Text>
-            <Text style={styles.summaryValue}>{formatPace(run.avgPace)}/km</Text>
+            <Text style={styles.summaryLabel}>{t("summary.averagePace")}</Text>
+            <Text style={styles.summaryValue}>{formatPaceWithUnit(run.avgPace, language)}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Finished</Text>
-            <Text style={styles.summaryValue}>{formatWeekday(run.endedAt)}</Text>
+            <Text style={styles.summaryLabel}>{t("summary.finished")}</Text>
+            <Text style={styles.summaryValue}>{formatWeekday(run.endedAt, language)}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Total Distance</Text>
-            <Text style={styles.summaryValue}>{formatDistance(run.distance)}</Text>
+            <Text style={styles.summaryLabel}>{t("summary.totalDistance")}</Text>
+            <Text style={styles.summaryValue}>{formatDistance(run.distance, 2, language)}</Text>
           </View>
         </Animated.View>
 
@@ -80,16 +114,18 @@ export default function SummaryScreen() {
             style={styles.primaryButton}
             onPress={() => {
               Share.share({
-                message: `I completed a ${formatDistance(run.distance)} run in Ruvelo in ${formatDuration(
-                  run.duration
-                )}, averaging ${formatPace(run.avgPace)}/km.`,
+                message: t("summary.shareMessage", {
+                  distance: formatDistance(run.distance, 2, language),
+                  duration: formatDuration(run.duration),
+                  pace: formatPaceWithUnit(run.avgPace, language),
+                }),
               }).catch(() => undefined);
             }}
           >
-            <Text style={styles.primaryLabel}>Share Summary</Text>
+            <Text style={styles.primaryLabel}>{t("summary.share")}</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={() => router.replace("/")}>
-            <Text style={styles.secondaryLabel}>Back Home</Text>
+            <Text style={styles.secondaryLabel}>{t("summary.backHome")}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -107,6 +143,14 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: 48,
     gap: spacing.xl,
+  },
+  topBar: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    alignItems: "flex-end",
+  },
+  contentTopBar: {
+    alignItems: "flex-end",
   },
   centerShell: {
     flex: 1,
