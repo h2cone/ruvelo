@@ -1,4 +1,4 @@
-import { Coordinate, Run } from "../types/run";
+import type { Coordinate, Run } from "../types/run";
 import { createRouteStats } from "./route";
 
 export type RunPhase = "idle" | "requesting" | "running" | "paused" | "saving";
@@ -53,7 +53,10 @@ export function createRunSessionState() {
   return createIdleState();
 }
 
-export function reduceRunSession(state: RunSessionState, action: RunSessionAction): RunSessionState {
+export function reduceRunSession(
+  state: RunSessionState,
+  action: RunSessionAction,
+): RunSessionState {
   switch (action.type) {
     case "routeUpdated": {
       const { distance, currentPace } = createRouteStats(action.route);
@@ -175,7 +178,7 @@ export function createRunRecord(
   state: RunSessionState,
   runId: string,
   endedAt: number,
-  route: Coordinate[]
+  route: Coordinate[],
 ): Run {
   if (!state.startedAt) {
     throw new Error("errors.runStartTimeMissing");

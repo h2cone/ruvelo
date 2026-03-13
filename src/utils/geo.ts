@@ -1,4 +1,4 @@
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 
 const EARTH_RADIUS = 6371000;
 
@@ -14,10 +14,7 @@ export function haversineDistance(a: Coordinate, b: Coordinate) {
 
   const haversine =
     Math.sin(latDelta / 2) * Math.sin(latDelta / 2) +
-    Math.cos(lat1) *
-      Math.cos(lat2) *
-      Math.sin(lonDelta / 2) *
-      Math.sin(lonDelta / 2);
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(lonDelta / 2) * Math.sin(lonDelta / 2);
 
   return 2 * EARTH_RADIUS * Math.asin(Math.sqrt(haversine));
 }

@@ -1,17 +1,20 @@
-import { getCurrentLanguage, getDistanceUnit, getLocale, getPaceUnit, Language } from "../i18n/config";
+import {
+  getCurrentLanguage,
+  getDistanceUnit,
+  getLocale,
+  getPaceUnit,
+  type Language,
+} from "../i18n/config";
 
 export function formatDistance(
   meters: number,
   digits = 2,
-  language: Language = getCurrentLanguage()
+  language: Language = getCurrentLanguage(),
 ) {
   return `${(meters / 1000).toFixed(digits)} ${getDistanceUnit(language, "km")}`;
 }
 
-export function formatDistanceCompact(
-  meters: number,
-  language: Language = getCurrentLanguage()
-) {
+export function formatDistanceCompact(meters: number, language: Language = getCurrentLanguage()) {
   if (meters < 1000) {
     return `${Math.round(meters)} ${getDistanceUnit(language, "m")}`;
   }
@@ -25,14 +28,10 @@ export function formatDuration(totalSeconds: number) {
   const seconds = totalSeconds % 60;
 
   if (hours > 0) {
-    return [hours, minutes, seconds]
-      .map((value) => value.toString().padStart(2, "0"))
-      .join(":");
+    return [hours, minutes, seconds].map((value) => value.toString().padStart(2, "0")).join(":");
   }
 
-  return [minutes, seconds]
-    .map((value) => value.toString().padStart(2, "0"))
-    .join(":");
+  return [minutes, seconds].map((value) => value.toString().padStart(2, "0")).join(":");
 }
 
 export function formatPace(secondsPerKm: number | null | undefined) {
@@ -50,15 +49,12 @@ export function formatPace(secondsPerKm: number | null | undefined) {
 
 export function formatPaceWithUnit(
   secondsPerKm: number | null | undefined,
-  language: Language = getCurrentLanguage()
+  language: Language = getCurrentLanguage(),
 ) {
   return `${formatPace(secondsPerKm)}${getPaceUnit(language)}`;
 }
 
-export function formatWeekday(
-  timestamp: number,
-  language: Language = getCurrentLanguage()
-) {
+export function formatWeekday(timestamp: number, language: Language = getCurrentLanguage()) {
   return new Date(timestamp).toLocaleDateString(getLocale(language), {
     month: "short",
     day: "numeric",
@@ -66,10 +62,7 @@ export function formatWeekday(
   });
 }
 
-export function formatClock(
-  timestamp: number,
-  language: Language = getCurrentLanguage()
-) {
+export function formatClock(timestamp: number, language: Language = getCurrentLanguage()) {
   return new Date(timestamp).toLocaleTimeString(getLocale(language), {
     hour: "2-digit",
     minute: "2-digit",

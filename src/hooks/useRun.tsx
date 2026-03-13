@@ -1,28 +1,33 @@
+import type { LocationSubscription } from "expo-location";
 import { router } from "expo-router";
 import {
   createContext,
-  PropsWithChildren,
+  type PropsWithChildren,
   useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
-import type { LocationSubscription } from "expo-location";
 
 import {
   createRunRecord,
   createRunSessionState,
   getElapsedSeconds,
+  type RunPhase,
+  type RunSessionAction,
   reduceRunSession,
-  RunPhase,
-  RunSessionAction,
 } from "../core/runSession";
 import { createRun } from "../db/runs";
 import { getErrorTranslationKey } from "../i18n/config";
-import { beginBackgroundTracking, beginForegroundTracking, endBackgroundTracking, ensureLocationPermissions } from "../services/location";
+import {
+  beginBackgroundTracking,
+  beginForegroundTracking,
+  endBackgroundTracking,
+  ensureLocationPermissions,
+} from "../services/location";
 import { getRouteBuffer, resetRouteBuffer, subscribeToRouteBuffer } from "../services/tracking";
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 
 interface RunContextValue {
   phase: RunPhase;

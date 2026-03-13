@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ActivityIndicator,
+  type LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Animated, {
   cancelAnimation,
   Easing,
@@ -8,6 +14,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { LanguageToggle } from "../src/components/LanguageToggle";
 import { StatBadge } from "../src/components/StatBadge";

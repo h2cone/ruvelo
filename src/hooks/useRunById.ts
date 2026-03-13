@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { getRunById } from "../db/runs";
-import { Run } from "../types/run";
+import type { Run } from "../types/run";
 
 export function useRunById(id?: string | string[]) {
   const targetId = Array.isArray(id) ? id[0] : id;

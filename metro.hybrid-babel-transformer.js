@@ -7,13 +7,15 @@ const projectRoot = process.cwd();
 
 const SWC_CACHE_KEY = crypto
   .createHash("sha1")
-  .update(JSON.stringify({
-    swcVersion,
-    target: "esnext",
-    extensions: [".ts", ".tsx", ".mts", ".cts"],
-    disableEnv: "RUVELO_DISABLE_SWC_PREPASS",
-    scope: "project-root-only",
-  }))
+  .update(
+    JSON.stringify({
+      swcVersion,
+      target: "esnext",
+      extensions: [".ts", ".tsx", ".mts", ".cts"],
+      disableEnv: "RUVELO_DISABLE_SWC_PREPASS",
+      scope: "project-root-only",
+    }),
+  )
   .digest("hex");
 
 function normalizePath(value) {

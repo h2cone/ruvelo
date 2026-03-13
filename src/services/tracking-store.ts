@@ -1,5 +1,5 @@
 import { appendCoordinatesToRoute } from "../core/route";
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 
 export const TRACKING_TASK_NAME = "ruvelo-background-tracking";
 
@@ -10,7 +10,9 @@ let routeBuffer: Coordinate[] = [];
 
 function publishRoute() {
   const snapshot = [...routeBuffer];
-  listeners.forEach((listener) => listener(snapshot));
+  listeners.forEach((listener) => {
+    listener(snapshot);
+  });
 }
 
 export function appendCoordinates(coordinates: Coordinate[]) {

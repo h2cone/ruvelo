@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 import {
   createRunRecord,
   createRunSessionState,
   getElapsedSeconds,
+  type RunSessionState,
   reduceRunSession,
-  RunSessionState,
 } from "./runSession";
 
 function createCoordinate(overrides: Partial<Coordinate> = {}): Coordinate {
@@ -223,7 +223,7 @@ describe("reduceRunSession", () => {
       }),
       {
         type: "reset",
-      }
+      },
     );
 
     expect(nextState).toEqual(createRunSessionState());
@@ -263,8 +263,8 @@ describe("createRunRecord", () => {
         },
         "run-1",
         20_000,
-        []
-      )
+        [],
+      ),
     ).toThrow("errors.runStartTimeMissing");
   });
 

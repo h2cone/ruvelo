@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 
 import { useI18n } from "../i18n";
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 import { palette, radius, spacing } from "../utils/constants";
 import { boundingRegion } from "../utils/geo";
 

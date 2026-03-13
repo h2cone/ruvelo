@@ -1,4 +1,4 @@
-import { Run } from "../types/run";
+import type { Run } from "../types/run";
 import { smoothRoute } from "../utils/geo";
 
 const STORAGE_KEY = "ruvelo:runs";
@@ -38,7 +38,7 @@ export async function getRunById(id: string) {
 
 export async function getRecentRuns(limit = 20) {
   return readRuns()
-    .sort((a, b) => b.startedAt - a.startedAt)
+    .toSorted((a, b) => b.startedAt - a.startedAt)
     .slice(0, limit);
 }
 

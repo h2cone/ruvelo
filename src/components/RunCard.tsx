@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useI18n } from "../i18n";
-import { Run } from "../types/run";
+import type { Run } from "../types/run";
+import { palette, radius, spacing } from "../utils/constants";
 import {
   formatClock,
   formatDistanceCompact,
@@ -9,7 +10,6 @@ import {
   formatPaceWithUnit,
   formatWeekday,
 } from "../utils/format";
-import { palette, radius, spacing } from "../utils/constants";
 
 interface RunCardProps {
   run: Run;

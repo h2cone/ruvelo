@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Easing, runOnJS, useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
+import {
+  Easing,
+  runOnJS,
+  useAnimatedReaction,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 export function useAnimatedValue(value: number, duration = 600) {
   const shared = useSharedValue(value);
@@ -16,7 +22,7 @@ export function useAnimatedValue(value: number, duration = 600) {
     () => shared.value,
     (next) => {
       runOnJS(setDisplayValue)(next);
-    }
+    },
   );
 
   return displayValue;

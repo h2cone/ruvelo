@@ -1,7 +1,7 @@
-import * as Location from "expo-location";
+import type * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 import {
   appendCoordinates as appendCoordinatesStore,
   getRouteBuffer,
@@ -35,7 +35,8 @@ if (!TaskManager.isTaskDefined(TRACKING_TASK_NAME)) {
       return;
     }
 
-    const locations = (data as { locations?: Location.LocationObject[] } | undefined)?.locations ?? [];
+    const locations =
+      (data as { locations?: Location.LocationObject[] } | undefined)?.locations ?? [];
     if (locations.length > 0) {
       appendLocationObjects(locations);
     }

@@ -1,4 +1,4 @@
-import { Text, TextStyle } from "react-native";
+import { Text, type TextStyle } from "react-native";
 
 import { useAnimatedValue } from "../hooks/useAnimatedValue";
 

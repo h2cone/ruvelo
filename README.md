@@ -39,6 +39,20 @@ npm run ios
 npm run web
 ```
 
+## Code Quality
+
+Ruvelo uses Oxc for formatting, linting, and editor diagnostics. Expo runtime bundling still stays on Metro and Babel.
+
+```bash
+npm run lint
+npm run format:check
+npm run check
+npm run check:fix
+npm run typecheck
+```
+
+If you use VS Code, install the recommended `oxc.oxc-vscode` extension so the workspace settings in `.vscode/` can format and fix supported files on save.
+
 ## Notes
 
 - Ruvelo needs location permission to record your runs.

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { useI18n } from "../i18n";
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 import { palette, radius, spacing } from "../utils/constants";
 
 interface RouteMapProps {
@@ -23,9 +23,7 @@ export function RouteMap({ route }: RouteMapProps) {
   return (
     <View style={[styles.placeholder, styles.shell]}>
       <Text style={styles.placeholderTitle}>{t("map.webDisabled")}</Text>
-      <Text style={styles.placeholderBody}>
-        {t("map.webBody", { count: route.length })}
-      </Text>
+      <Text style={styles.placeholderBody}>{t("map.webBody", { count: route.length })}</Text>
     </View>
   );
 }

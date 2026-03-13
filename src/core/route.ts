@@ -1,4 +1,4 @@
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 import { haversineDistance, totalDistance } from "../utils/geo";
 
 export interface RouteStats {

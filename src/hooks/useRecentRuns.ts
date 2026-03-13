@@ -2,7 +2,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
 import { getRecentRuns } from "../db/runs";
-import { Run } from "../types/run";
+import type { Run } from "../types/run";
 
 export function useRecentRuns(limit = 12) {
   const [runs, setRuns] = useState<Run[]>([]);
@@ -26,7 +26,7 @@ export function useRecentRuns(limit = 12) {
   useFocusEffect(
     useCallback(() => {
       loadRuns();
-    }, [loadRuns])
+    }, [loadRuns]),
   );
 
   return { runs, loading, error, reload: loadRuns };

@@ -1,4 +1,4 @@
-import { Run, RunRecordRow } from "../types/run";
+import type { Run, RunRecordRow } from "../types/run";
 import { smoothRoute } from "../utils/geo";
 import { getDatabase, initializeDatabase } from "./client";
 
@@ -27,7 +27,7 @@ export async function createRun(run: Run) {
     run.duration,
     run.distance,
     run.avgPace,
-    JSON.stringify(smoothRoute(run.route))
+    JSON.stringify(smoothRoute(run.route)),
   );
 
   return run;
@@ -36,10 +36,7 @@ export async function createRun(run: Run) {
 export async function getRunById(id: string) {
   await initializeDatabase();
   const db = getDatabase();
-  const row = await db.getFirstAsync<RunRecordRow>(
-    "SELECT * FROM runs WHERE id = ? LIMIT 1",
-    id
-  );
+  const row = await db.getFirstAsync<RunRecordRow>("SELECT * FROM runs WHERE id = ? LIMIT 1", id);
 
   return row ? rowToRun(row) : null;
 }
@@ -49,7 +46,7 @@ export async function getRecentRuns(limit = 20) {
   const db = getDatabase();
   const rows = await db.getAllAsync<RunRecordRow>(
     "SELECT * FROM runs ORDER BY started_at DESC LIMIT ?",
-    limit
+    limit,
   );
 
   return rows.map(rowToRun);

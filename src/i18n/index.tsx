@@ -1,7 +1,7 @@
 import AsyncStorage from "expo-sqlite/kv-store";
 import {
   createContext,
-  PropsWithChildren,
+  type PropsWithChildren,
   useCallback,
   useContext,
   useEffect,
@@ -14,11 +14,11 @@ import {
   getLocale,
   isLanguage,
   LANGUAGE_STORAGE_KEY,
-  Language,
+  type Language,
   setCurrentLanguage,
+  type TranslationKey,
   translate,
   translateText,
-  TranslationKey,
 } from "./config";
 
 interface I18nContextValue {
@@ -77,7 +77,7 @@ export function I18nProvider({ children }: PropsWithChildren) {
       t: (key, params) => translate(language, key, params),
       translateText: (input) => translateText(input, language),
     }),
-    [language, setLanguage, toggleLanguage]
+    [language, setLanguage, toggleLanguage],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
@@ -102,4 +102,3 @@ export {
   translate,
   translateText,
 } from "./config";
-

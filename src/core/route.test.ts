@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Coordinate } from "../types/run";
+import type { Coordinate } from "../types/run";
 import { haversineDistance } from "../utils/geo";
 import { appendCoordinatesToRoute, createRouteStats } from "./route";
 

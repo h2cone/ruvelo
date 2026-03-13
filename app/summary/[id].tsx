@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Share, StyleSheet, Text, Pressable, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { LanguageToggle } from "../../src/components/LanguageToggle";
 import { RouteMap } from "../../src/components/RouteMap";

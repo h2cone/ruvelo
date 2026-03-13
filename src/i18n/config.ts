@@ -193,7 +193,7 @@ export function getLocale(language: Language = currentLanguage) {
 
 export function getDistanceUnit(
   language: Language = currentLanguage,
-  unit: keyof (typeof distanceUnitMap)["en"] = "km"
+  unit: keyof (typeof distanceUnitMap)["en"] = "km",
 ) {
   return distanceUnitMap[language][unit];
 }
@@ -202,22 +202,18 @@ export function getPaceUnit(language: Language = currentLanguage) {
   return paceUnitMap[language];
 }
 
-export function translate(
-  language: Language,
-  key: TranslationKey,
-  params: TranslationParams = {}
-) {
+export function translate(language: Language, key: TranslationKey, params: TranslationParams = {}) {
   const value = translations[language][key];
   return typeof value === "function" ? value(params) : value;
 }
 
 export function isTranslationKey(value: string): value is TranslationKey {
-  return Object.prototype.hasOwnProperty.call(translations.en, value);
+  return Object.hasOwn(translations.en, value);
 }
 
 export function translateText(
   value: string | null | undefined,
-  language: Language = currentLanguage
+  language: Language = currentLanguage,
 ) {
   if (!value) {
     return "";
@@ -226,10 +222,7 @@ export function translateText(
   return isTranslationKey(value) ? translate(language, value) : value;
 }
 
-export function getErrorTranslationKey(
-  error: unknown,
-  fallback: TranslationKey
-): TranslationKey {
+export function getErrorTranslationKey(error: unknown, fallback: TranslationKey): TranslationKey {
   if (typeof error === "string" && isTranslationKey(error)) {
     return error;
   }
@@ -240,4 +233,3 @@ export function getErrorTranslationKey(
 
   return fallback;
 }
-

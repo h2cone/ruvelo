@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
-
-import { AnimatedCounter } from "./AnimatedCounter";
 import { palette, radius, spacing } from "../utils/constants";
+import { AnimatedCounter } from "./AnimatedCounter";
 
 interface StatBadgeProps {
   label: string;
@@ -16,12 +15,7 @@ const toneMap = {
   cool: palette.accentCool,
 } as const;
 
-export function StatBadge({
-  label,
-  value,
-  formatter,
-  tone = "accent",
-}: StatBadgeProps) {
+export function StatBadge({ label, value, formatter, tone = "accent" }: StatBadgeProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>

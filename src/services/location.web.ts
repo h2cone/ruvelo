@@ -48,7 +48,7 @@ export async function beginForegroundTracking(): Promise<BrowserLocationSubscrip
       enableHighAccuracy: true,
       maximumAge: 0,
       timeout: 10000,
-    }
+    },
   );
 
   return {

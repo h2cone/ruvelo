@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    ".expo/**",
+    ".expo-smoke*/**",
+    ".tmp-ruvelo/**",
+    "package-lock.json"
+  ],
+  "lineEnding": "lf",
+  "printWidth": 100,
+  "semi": true,
+  "singleQuote": false,
+  "jsxSingleQuote": false,
+  "sortPackageJson": false,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "useTabs": false
+}

@@ -58,7 +58,9 @@ export default function HomeScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{t("home.recentRuns")}</Text>
-          {runs.length > 0 ? <Text style={styles.sectionHint}>{t("home.recentRunsHint")}</Text> : null}
+          {runs.length > 0 ? (
+            <Text style={styles.sectionHint}>{t("home.recentRunsHint")}</Text>
+          ) : null}
         </View>
 
         {loading ? (

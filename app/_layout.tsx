@@ -6,8 +6,8 @@ import { Platform, StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { initializeDatabase } from "../src/db/client";
-import { I18nProvider } from "../src/i18n";
 import { RunProvider } from "../src/hooks/useRun";
+import { I18nProvider } from "../src/i18n";
 import { palette } from "../src/utils/constants";
 import "../src/services/tracking";
 
