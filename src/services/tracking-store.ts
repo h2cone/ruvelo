@@ -1,4 +1,4 @@
-import { appendCoordinatesToRoute } from "../core/route";
+import { appendCoordinatesToRoute } from "../run/route";
 import type { Coordinate } from "../types/run";
 
 export const TRACKING_TASK_NAME = "ruvelo-background-tracking";

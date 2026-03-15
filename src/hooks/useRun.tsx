@@ -17,7 +17,7 @@ import {
   type RunPhase,
   type RunSessionAction,
   reduceRunSession,
-} from "../core/runSession";
+} from "../run/runSession";
 import { createRun } from "../db/runs";
 import { getErrorTranslationKey } from "../i18n/config";
 import {

@@ -19,7 +19,3 @@ There is no automated test runner configured yet. Before opening a PR, run `npm 
 ## Commit & Pull Request Guidelines
 
 Current history uses short, imperative commit subjects such as `Build initial Ruvelo run-tracking app`. Follow that format and keep each commit focused on one logical change. PRs should include a concise description, linked issue when available, and screenshots or recordings for UI updates. Call out permission changes, background tracking behavior, or SQLite schema updates explicitly so reviewers can test them safely.
-
-## Engineering Principle
-
-Simplify Your Code: Functional Core, Imperative Shell
